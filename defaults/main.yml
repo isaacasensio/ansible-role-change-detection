@@ -1,0 +1,6 @@
+---
+change_detection_image: ghcr.io/dgtlmoon/changedetection.io
+change_detection_host_config_path: /etc/change-detection
+change_detection_host_data_path: /var/lib/change-detection
+change_detection_container_user: change-detection
+change_detection_host_port: 5000

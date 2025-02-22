@@ -1,0 +1,16 @@
+[Unit]
+Description=change-detection
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+User={{ change_detection_container_user }}
+Group=docker
+WorkingDirectory={{ change_detection_host_config_path }}
+ExecStartPre=/usr/local/bin/docker-compose -f {{ change_detection_host_config_path }}/docker-compose.yml down
+ExecStart=/usr/local/bin/docker-compose -f {{ change_detection_host_config_path }}/docker-compose.yml up
+ExecStop=/usr/local/bin/docker-compose -f {{ change_detection_host_config_path }}/docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target

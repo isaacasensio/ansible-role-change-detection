@@ -1,0 +1,61 @@
+---
+- name: Create change-detection user
+  ansible.builtin.user:
+    name: "{{ change_detection_container_user }}"
+    shell: /sbin/nologin
+    create_home: true
+    state: present
+  become: true
+
+- name: Get created user metadata
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ change_detection_container_user }}"
+
+- name: Setting user id and group id facts
+  ansible.builtin.set_fact:
+    created_uid: "{{ ansible_facts.getent_passwd[change_detection_container_user].1 }}"
+    created_gid: "{{ ansible_facts.getent_passwd[change_detection_container_user].2 }}"
+
+- name: Ensure change-detection folders exists
+  become: true
+  ansible.builtin.file:
+    dest: "{{ item }}"
+    owner: "{{ change_detection_container_user }}"
+    group: "{{ change_detection_container_user }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "{{ change_detection_host_config_path }}"
+    - "{{ change_detection_host_data_path }}"
+
+- name: Copy change-detection docker-compose template.
+  ansible.builtin.template:
+    src: templates/docker-compose.yml.j2
+    dest: "{{ change_detection_host_config_path }}/docker-compose.yml"
+    owner: "{{ change_detection_container_user }}"
+    group: "{{ change_detection_container_user }}"
+    mode: 0644
+  become: true
+
+- name: Create systemd change-detection service.
+  ansible.builtin.template:
+    src: templates/change-detection.service.j2
+    dest: "/etc/systemd/system/change-detection.service"
+    mode: 0644
+  become: true
+
+- name: Ensure change-detection.service is started
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: change-detection
+  become: true
+
+- name: Remove old image versions
+  become: true
+  community.docker.docker_prune:
+    images: true
+    images_filters:
+      dangling: false
+  notify: Restart Docker service
