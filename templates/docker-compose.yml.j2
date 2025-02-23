@@ -18,8 +18,8 @@ services:
       playwright-chrome:
         condition: service_started
 
-  playwrite-chrome:
-    hostname: playwrite-chrome
+  playwright-chrome:
+    hostname: playwright-chrome
     image: browserless/chrome
     restart: unless-stopped
     environment:
