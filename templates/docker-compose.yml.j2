@@ -13,6 +13,8 @@ services:
     volumes:
       - {{change_detection_host_data_path}}:/datastore
     environment:
+      - PUID={ created_uid }}
+      - PGID={{ created_gid }}
       - PLAYWRIGHT_DRIVER_URL=ws://playwright-chrome:3000
     depends_on:
       playwright-chrome:
